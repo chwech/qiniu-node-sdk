@@ -1,16 +1,45 @@
-const upload = require('./upload')
+// const upload = require('./upload')
+const crypto = require('crypto');
+const keys = require('./ak-sk')
+const { URL } = require('url');
 
-// 校验七牛上传回调的Authorization
-// @param mac           AK&SK对象
-// @param requestURI   回调的URL中的requestURI
-// @param reqBody      请求Body，仅当请求的ContentType为
-//                     application/x-www-form-urlencoded时才需要传入该参数
-// @param callbackAuth 回调时请求的Authorization头部值
-// exports.isQiniuCallback = function(mac, requestURI, reqBody, callbackAuth) {
-//   var auth = exports.generateAccessToken(mac, requestURI, reqBody);
-//   return auth === callbackAuth;
-// }
+function base64EncodeForUrlSafe(base64) {
+  encoded = base64.replace(/\+/g, '-').replace(/\//g, '_')
+  return encoded
+}
+const accessTokenAcache = {}
+function getAccessToken(url) {
+  url = new URL(url)
+  let path = url.pathname
+  if (url.search) {
+    path += url.search
+  }
+  if (accessTokenAcache[path]) {
+    return accessTokenAcache[path]
+  }
+  // 签名内容
+  const signingStr = `${path}\n`
+  // 使用sk进行HMAC-SHA1签名：
+  const hmac = crypto.createHmac('sha1', keys.sk);
+  hmac.update(signingStr);
+  let sign = hmac.digest('base64');
+  console.log('sign', sign);
+  console.log('=============================================');
+  // URL安全的Base64编码
+  encodedSign = base64EncodeForUrlSafe(sign)
+  console.log('encodedSign', encodedSign);
+  console.log('=============================================');
+  // 和ak拼接
+  const accessToken = `${keys.ak}:${encodedSign}`
+  accessTokenAcache[path] = accessToken
+  console.log('accessToken', accessToken)
+  console.log('=====================================');
+  return accessToken
+}
 
-upload.uploadFile()
+// upload.uploadFile()
 
-
+module.exports = {
+  getAccessToken,
+  base64EncodeForUrlSafe
+}
