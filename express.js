@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const mysql = require('mysql');
-const { getBucketsList, addBucket } = require('./bucket')
+const { getBucketsList, addBucket, deleteBucket } = require('./http/bucket')
 const bodyParser = require('body-parser')
 const { base64EncodeForUrlSafe } = require('./index')
 
@@ -30,7 +30,7 @@ app.use(cors(corsOptions))
 // parse application/json
 app.use(bodyParser.json())
 
-app.get('/buckets', async (req, res) =>{
+app.get('/bucket', async (req, res) =>{
   let data = await getBucketsList()
   data = data.map(item => {
     return {
@@ -45,18 +45,26 @@ app.get('/buckets', async (req, res) =>{
   // })
 })
 
-app.delete('/buckets', (req, res) => {
-
+app.delete('/bucket/:bucketName', async (req, res) => {
+  const bucketName = req.params.bucketName
+  const status = await deleteBucket(bucketName)
+  console.log('status', status)
+  if (status === 200) {
+    res.send({
+      code: 20000,
+      msg: '删除存储空间成功',
+      data: null
+    })
+  } else {
+    res.send({
+      code: 50000,
+      msg: '删除存储空间失败',
+      data: null
+    })
+  }
 })
 
-app.get('/options/zone', (req, res) => {
-  pool.query('SELECT * FROM qn_zone', function (error, results, fields) {
-    if (error) throw error;
-    res.send(results)
-  });
-})
-
-app.post(`/buckets`, async (req, res) => {
+app.post(`/bucket`, async (req, res) => {
   let { name, zone } =  req.body
   name = Buffer.from(name).toString('base64')
   name = base64EncodeForUrlSafe(name)
@@ -98,6 +106,13 @@ app.post(`/buckets`, async (req, res) => {
       data: null
     })
   }
+})
+
+app.get('/options/zone', (req, res) => {
+  pool.query('SELECT * FROM qn_zone', function (error, results, fields) {
+    if (error) throw error;
+    res.send(results)
+  });
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

@@ -1,5 +1,4 @@
-const { qboxAxios, qiniuAxios } = require('./http/index')
-
+const { qboxAxios, qiniuAxios } = require('./index')
 
 /**
  * 获取存储空间列表
@@ -56,7 +55,23 @@ async function addBucket(bucketName, region) {
   }
 }
 
+/**
+ * 删除存储空间
+ * @date 2019-08-26
+ * @param {string} bucketName
+ * @returns 
+ */
+async function deleteBucket(bucketName) {
+  try {
+    let { status } = await qiniuAxios.post(`/drop/${bucketName}`)
+    return status
+  } catch (error) {
+    console.log('deleteBucket error', error)
+  }
+}
+
 module.exports = {
   getBucketsList,
-  addBucket
+  addBucket,
+  deleteBucket
 }
