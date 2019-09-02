@@ -1,12 +1,11 @@
-const { qboxAxios, qiniuAxios } = require('./index')
+const { qboxAxios, qiniuAxios, apiQiniuAxios } = require('./index')
 
 /**
  * 获取存储空间列表
  * @date 2019-08-23
- * @param {*} params
  * @returns 
  */
-async function getBucketsList(params) {
+async function getBucketsList() {
   const url = '/buckets'
   try {
     const { data, status } = await qboxAxios.get(url)
@@ -70,8 +69,24 @@ async function deleteBucket(bucketName) {
   }
 }
 
+/**
+ * 获取存储空间域名列表
+ * @date 2019-08-27
+ * @param {string} bucketName
+ * @returns 
+ */
+async function getDomain(bucketName) {
+  try {
+    const data = await apiQiniuAxios.get(`/v6/domain/list?tbl=${encodeURIComponent(bucketName)}`)
+    return data
+  } catch (error) {
+    console.log('get domain error', error)
+  }
+}
+
 module.exports = {
   getBucketsList,
   addBucket,
-  deleteBucket
+  deleteBucket,
+  getDomain
 }

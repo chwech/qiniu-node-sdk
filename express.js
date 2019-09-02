@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const mysql = require('mysql');
-const { getBucketsList, addBucket, deleteBucket } = require('./http/bucket')
+const { getBucketsList, addBucket, deleteBucket, getDomain } = require('./http/bucket')
 const bodyParser = require('body-parser')
 const { base64EncodeForUrlSafe } = require('./index')
 
@@ -113,6 +113,19 @@ app.get('/options/zone', (req, res) => {
     if (error) throw error;
     res.send(results)
   });
+})
+
+app.get('/domain/:bucketName', async (req, res) => {
+  const bucketName = req.params.bucketName
+  const data = await getDomain(bucketName)
+  const { status, data: responseData } = data
+  if (status === 200) {
+    res.send({
+      code: 20000,
+      msg: '获取成功',
+      data: responseData
+    })
+  }
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

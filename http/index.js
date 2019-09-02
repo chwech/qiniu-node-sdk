@@ -7,6 +7,9 @@ const qboxAxios = axios.create({
 const qiniuAxios = axios.create({
   baseURL: 'http://rs.qiniu.com'
 })
+const apiQiniuAxios = axios.create({
+  baseURL: 'http://api.qiniu.com'
+})
 qboxAxios.interceptors.request.use(function (config) {
   config.headers.Authorization = `QBox ${getAccessToken(config.baseURL + config.url)}`
   return config
@@ -20,7 +23,15 @@ qiniuAxios.interceptors.request.use(function (config) {
   return Promise.reject(error)
 });
 
+apiQiniuAxios.interceptors.request.use(function (config) {
+  config.headers.Authorization = `QBox ${getAccessToken(config.baseURL + config.url)}`
+  return config
+}, function (error) {
+  return Promise.reject(error)
+});
+
 module.exports = {
   qboxAxios,
-  qiniuAxios
+  qiniuAxios,
+  apiQiniuAxios
 }
